@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\Listing;
 use App\Models\Tag;
+use App\Models\Listing;
+use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Exports\ListingsExport;
+use App\Imports\ListingsImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ListingController extends Controller
 {
+    protected $_action;
     public function index()
     {
         $listings = Listing::all();
@@ -73,5 +77,20 @@ class ListingController extends Controller
         $listing->delete();
 
         return redirect()->route('listings.index')->with('success', 'Listing deleted successfully.');
+    }
+    public function export()
+    {
+        return Excel::download(new ListingsExport, 'listings.csv');
+    }
+    public function import()
+    {
+        return view('listings.import');
+    }
+    public function handelImport(Request $request)
+    {
+        Excel::import(new ListingsImport, $request->file('data'));
+
+        return redirect()->route('listings.index')->with('success', 'Listing imported successfully.');
+
     }
 }
